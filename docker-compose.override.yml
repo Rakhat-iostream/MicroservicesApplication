@@ -11,10 +11,19 @@ services:
     basketdb:
         container_name: basketdb
         restart: always
-        volumes:
-            - ${WEBAPP_STORAGE_HOME}/site:/data/db
         ports:
             - "6379:6379"
+    orderdb:
+        container_name: orderdb
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: "postgres"
+            POSTGRES_PASSWORD: "0000"
+            POSTGRES_DB: "OrderDb"
+        restart: always
+        volumes:
+            - pgdata:/var/lib/postgresql/data
     rabbitmq:
         container_name: rabbitmq
         restart: always
@@ -22,6 +31,7 @@ services:
             - "5672:5672"
             - "15672:15672"
     catalog.api:
+        container_name: catalogapi
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
             - "CatalogDatabaseSettings:ConnectionString=mongodb://catalogdb:27017"
@@ -33,6 +43,7 @@ services:
         ports:
             - "8000:80"
     basket.api:
+        container_name: basketapi
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
             - "ConnectionStrings:Redis=basketdb:6379"
@@ -45,3 +56,49 @@ services:
             - ${HOME}/.aspnet/https:/root/.aspnet/https/
         ports:
             - "8001:80"
+    ordering.api:
+        container_name: orderingapi
+        restart: on-failure
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - "ConnectionStrings:DefaultConnection=Host=orderdb;Port=5432;Database=OrderDb;Username=postgres;Password=0000"
+            - "EventBus:HostName=rabbitmq"
+        depends_on:
+            - rabbitmq
+            - orderdb
+        volumes:
+            - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
+            - ${HOME}/.aspnet/https:/root/.aspnet/https/
+        ports:
+            - "8002:80"
+    apigateway:
+        container_name: apigateway
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+        depends_on:
+            - catalog.api
+            - basket.api
+            - ordering.api
+        volumes:
+            - ${HOME}/.microsoft/usersecrets/:/root/.microsoft/usersecrets
+            - ${HOME}/.aspnet/https:/root/.aspnet/https/
+        ports:
+            - "7000:80"
+    shoppingweb:
+        container_name: shoppingweb
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - "ApiSettings:BaseAddress=apigateway"
+        depends_on:
+            - catalog.api
+            - basket.api
+            - ordering.api
+            - apigateway
+        volumes:
+            - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+            - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+        ports:
+            - "8003:80"
+
+volumes:
+  pgdata:

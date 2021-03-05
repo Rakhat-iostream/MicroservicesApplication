@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Ordering.API.DTOs;
+using Ordering.Core.Entities;
 using Ordering.Core.Repositories;
 
 namespace Ordering.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
     {
@@ -23,10 +24,20 @@ namespace Ordering.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<OrderResponse>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetOrdersByUsername(string username)
+        [ProducesResponseType(typeof(IEnumerable<Order>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrdersByUsername(string username)
         {
-            throw new NotImplementedException();
+            var orderList = await _orderRepository.GetOrdersByUsername(username);
+            //var orderResponseList = _mapper.Map<IEnumerable<OrderResponse>>(orderList);
+            List<Order> orders = new List<Order>
+            {
+                new Order
+                {
+                    FirstName = "salem",
+                    Username = "alem"
+                }
+            };
+            return Ok(orders);
         }
     }
 }

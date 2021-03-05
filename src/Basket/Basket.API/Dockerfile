@@ -7,6 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["src/Basket/Basket.API/Basket.API.csproj", "src/Basket/Basket.API/"]
+COPY ["src/Common/EventBusRabbitMQ/EventBusRabbitMQ.csproj", "src/Common/EventBusRabbitMQ/"]
 RUN dotnet restore "src/Basket/Basket.API/Basket.API.csproj"
 COPY . .
 WORKDIR "/src/src/Basket/Basket.API"
