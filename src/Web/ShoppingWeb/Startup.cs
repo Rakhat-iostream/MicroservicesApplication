@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using ShoppingWeb.ApiContainer;
 using ShoppingWeb.ApiContainer.Interfaces;
+using ShoppingWeb.Services;
 using ShoppingWeb.Settings;
 
 namespace ShoppingWeb
@@ -36,6 +37,7 @@ namespace ShoppingWeb
             services.AddTransient<IBasketApi, BasketApi>();
             services.AddTransient<ICatalogApi, CatalogApi>();
             services.AddTransient<IUserApi, UserApi>();
+            services.AddTransient<IMailService, SmtpMailService>();
 
             services.AddSession(options =>
             {
