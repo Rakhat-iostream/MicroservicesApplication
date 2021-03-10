@@ -1,0 +1,65 @@
+﻿@page
+@model ShoppingWeb.Pages.RegisterModel
+@{
+    <head>
+        <link rel="stylesheet" type="text/css" href="~/css/login.css" />
+    </head>
+    <form class="form-horizontal" asp-page-handler="RegisterUser" method="post">
+        <fieldset>
+            <div id="legend">
+                <h1>Register</h1>
+                @{
+                    if (HttpContext.Request.Query.ContainsKey("registrationError"))
+                    {
+                        <h4 class="text-danger">@HttpContext.Request.Query["registrationError"]</h4>
+                    }
+                }
+            </div>
+            <div class="control-group registration-field d-flex">
+                <!-- Firstname -->
+                <label class="control-label d-block" for="firstname">First Name</label>
+                <div class="controls">
+                    <input type="text" id="firstname" name="firstname" placeholder="Enter firstname..." class="input-xlarge">
+                </div>
+            </div>
+
+            <div class="control-group registration-field d-flex">
+                <!-- Lastname -->
+                <label class="control-label d-block" for="lastname">Last Name</label>
+                <div class="controls">
+                    <input type="text" id="lastname" name="lastname" placeholder="Enter lastname..." class="input-xlarge">
+                </div>
+            </div>
+
+            <div class="control-group registration-field d-flex">
+                <!-- Username -->
+                <label class="control-label d-block" for="username">Username</label>
+                <div class="controls">
+                    <input type="text" id="username" name="username" placeholder="Enter username..." class="input-xlarge">
+                </div>
+            </div>
+            <div class="control-group registration-field d-flex">
+                <!-- Email -->
+                <label class="control-label d-block" for="email">Email</label>
+                <div class="controls">
+                    <input type="text" id="email" name="email" placeholder="Enter email..." class="input-xlarge">
+                </div>
+            </div>
+            <div class="control-group registration-field d-flex">
+                <!-- Password-->
+                <label class="control-label d-block" for="password">Password</label>
+                <div class="controls">
+                    <input type="password" id="password" name="password" placeholder="Enter password..." class="input-xlarge">
+                    <p class="help-block">Password should be at least 4 characters</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <!-- Button -->
+                <div class="controls">
+                    <button class="btn btn-success" type="submit">Register</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+}

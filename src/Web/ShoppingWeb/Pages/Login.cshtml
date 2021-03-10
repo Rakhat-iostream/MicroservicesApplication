@@ -1,0 +1,45 @@
+﻿@page
+@model ShoppingWeb.Pages.LoginModel
+@{
+}
+<head>
+    <link rel="stylesheet" type="text/css" href="~/css/login.css" />
+    </head>
+<body>
+    
+
+
+    <form class="form-horizontal" asp-page-handler="LoginUser" method="post">
+        <fieldset>
+            <div id="legend">
+                <h1>Login</h1>
+                <h4 class="text-danger">@HttpContext.Request.Query["loginError"]</h4>
+            </div>
+
+            <div class="control-group registration-field d-flex">
+                <!-- Username -->
+                <label class="control-label d-block" for="Email">Email</label>
+                <div class="controls">
+                    <input type="text" id="Email" name="Email" placeholder="Enter username..." class="input-xlarge">
+                </div>
+            </div>
+
+            <div class="control-group registration-field d-flex">
+                <!-- Password-->
+                <label class="control-label d-block" for="password">Password</label>
+                <div class="controls">
+                    <input type="password" id="password" name="password" placeholder="Enter password..." class="input-xlarge">
+                    <p class="help-block">Password should be at least 4 characters</p>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <!-- Button -->
+                <div class="controls">
+                    <button class="btn btn-success" type="submit">Login</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+ 
+</body>

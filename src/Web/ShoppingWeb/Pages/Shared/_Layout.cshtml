@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject IHttpContextAccessor context
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,7 +11,8 @@
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href="//fonts.googleapis.com/css?family=Open+Sans:400,300,600" rel="stylesheet" type="text/css">
     <link href="~/css/style.css" rel="stylesheet" type="text/css">
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="~/js/scripts.js"></script>
 </head>
 <body>
     <header>
@@ -31,17 +33,51 @@
                             <a class="nav-link" asp-area="" asp-page="/Index">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Product">Product</a>
-                        </li>                        
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Cart">Cart</a>
+                            <a class="nav-link" asp-page="Product" asp-route-pageNumber="1">Product</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Order">Order</a>
-                        </li>
+                        @{
+                            if (!string.IsNullOrEmpty(context.HttpContext.Session.GetString("userId")))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-page="/Order">Order</a>
+                                </li>
+                            }
+                        }
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Contact">Contact</a>
                         </li>
+                        @{
+                            if (string.IsNullOrEmpty(context.HttpContext.Session.GetString("userId")))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-page="/Register">Register</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-page="/Login">Login</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Profile">
+                                        <img src="https://i.stack.imgur.com/l60Hf.png"
+                                             class="img-fluid" style="max-width: 40px;" />
+                                    </a>
+                                </li>
+
+
+                                if (context.HttpContext.Session.GetString("role") == "admin")
+                                {
+                                    <a class="nav-link text-success" asp-page="/AddProduct">Add product</a>
+                                }
+                                <form asp-page="/Profile" asp-page-handler="Signout" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm ml-3">
+                                        Signout
+                                        <span class="badge badge-light"></span>
+                                    </button>
+                                </form>
+                            }
+                        }
                     </ul>
 
                     <form class="form-inline my-2 my-lg-0">
@@ -53,10 +89,15 @@
                                 </button>
                             </div>
                         </div>
-                        <a class="btn btn-success btn-sm ml-3" asp-area="" asp-page="/Cart">
-                            <i class="fa fa-shopping-cart"></i> Cart
-                            <span class="badge badge-light"></span>
-                        </a>
+                        @{
+                            if (!string.IsNullOrEmpty(context.HttpContext.Session.GetString("userId")))
+                            {
+                                <a class="btn btn-success btn-sm ml-3" asp-area="" asp-page="/Cart">
+                                    <i class="fa fa-shopping-cart"></i> Cart
+                                    <span class="badge badge-light"></span>
+                                </a>
+                            }
+                        }
                     </form>
                 </div>
             </div>
@@ -131,7 +172,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" type="text/javascript"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" type="text/javascript"></script>
     <script type="text/javascript">
-        //Plus & Minus for Quantity product
+    //Plus & Minus for Quantity product
         $(document).ready(function () {
             var quantity = 1;
 
@@ -151,31 +192,27 @@
 
         });
 
-      // Example starter JavaScript for disabling form submissions if there are invalid fields
-      (function() {
-        'use strict';
+        // Example starter JavaScript for disabling form submissions if there are invalid fields
+        (function () {
+            'use strict';
 
-        window.addEventListener('load', function() {
-          // Fetch all the forms we want to apply custom Bootstrap validation styles to
-          var forms = document.getElementsByClassName('needs-validation');
+            window.addEventListener('load', function () {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
 
-          // Loop over them and prevent submission
-          var validation = Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('submit', function(event) {
-              if (form.checkValidity() === false) {
-                event.preventDefault();
-                event.stopPropagation();
-              }
-              form.classList.add('was-validated');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
             }, false);
-          });
-        }, false);
-        })();
-
-    </script>
+        })();</script>
 
     @RenderSection("Scripts", required: false)
 </body>
 </html>
-
-

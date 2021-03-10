@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoppingWeb.ApiContainer.Interfaces;
@@ -11,6 +12,7 @@ namespace ShoppingWeb
     public class CartModel : PageModel
     {
         private readonly IBasketApi _basketApi;
+        private string userId;
 
         public CartModel(IBasketApi basketApi)
         {
@@ -21,19 +23,17 @@ namespace ShoppingWeb
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Cart = await _basketApi.GetBasket("test");            
-
+            userId = HttpContext.Session.GetString("userId");
+            Cart = await _basketApi.GetBasket(userId);
             return Page();
         }
 
         public async Task<IActionResult> OnPostRemoveToCartAsync(string productId)
         {
-            var basket = await _basketApi.GetBasket("test");
-
-            var item = basket.Items.Single(x => x.ProductId == productId);
-            basket.Items.Remove(item);
-
-            var basketUpdated = await _basketApi.UpdateBasket(basket);
+          
+            userId = HttpContext.Session.GetString("userId");
+            Cart = await _basketApi.GetBasket(userId);
+            await _basketApi.DeleteItem(Cart.Username, Cart.Items.Find(i => i.ProductId == productId));
             return RedirectToPage();
         }
     }

@@ -9,7 +9,9 @@ namespace ShoppingWeb.ApiContainer.Interfaces
     public interface IBasketApi
     {
         Task<Basket> GetBasket(string userName);
-        Task<Basket> UpdateBasket(Basket model);
-        Task CheckoutBasket(BasketCheckout model);
+        Task<bool> DeleteCart(string username);
+        Task<Basket> AddItem(string username, BasketItem item);
+        Task<bool> DeleteItem(string username, BasketItem item);
+        Task CheckoutBasket(OrderResponse model);
     }
 }

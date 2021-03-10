@@ -11,5 +11,6 @@ namespace ShoppingWeb.Settings
         string CatalogPath { get; set; }
         string BasketPath { get; set; }
         string OrderingPath { get; set; }
+        string UserPath { get; set; }
     }
 }

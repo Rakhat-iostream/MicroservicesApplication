@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -9,7 +7,6 @@ using Basket.API.Repositories.Interfaces;
 using EventBusRabbitMQ.Common;
 using EventBusRabbitMQ.Events;
 using EventBusRabbitMQ.Producers;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -33,59 +30,70 @@ namespace Basket.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(BasketCart), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<BasketCart>> GetBasket(string username)
+        public async Task<IActionResult> GetBasket(string username)
         {
-            var basket = await _repository.GetBasket(username);
-            return Ok(basket ?? new BasketCart(username));
+            var basket = await _repository.GetCart(username);
+            return Ok(basket ?? new BasketCart() { Username = username });
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(BasketCart), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<BasketCart>> UpdateBasket([FromBody] BasketCart basket)
+        public async Task<IActionResult> AddItemToBasket(BasketCartItem item, string username)
         {
-            return Ok(await _repository.UpdateBasket(basket));
+            if (string.IsNullOrEmpty(username)) return BadRequest("Couldn't find basket");
+            var basket = await _repository.AddItem(username, item);
+            if (basket == null) return StatusCode(500, "Failed to add item to basket");
+            return Ok(basket);
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> DeleteItemFromBasket(BasketCartItem item, string username)
+        {
+            if (string.IsNullOrEmpty(username)) return BadRequest("Couldn't find basket");
+            if (await _repository.DeleteItem(username, item))
+                return Ok("Deleted item from basket");
+
+            return StatusCode(500, "Failed to delete item from basket");
+        }
+
+
         [HttpDelete("{username}")]
-        [ProducesResponseType(typeof(void), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> DeleteBasket(string username)
         {
-            return Ok(await _repository.DeleteBasket(username));
+            if (string.IsNullOrEmpty(username)) return BadRequest("Couldn't find basket");
+            if (await _repository.DeleteCart(username)) return Ok("Deleted item from basket");
+            return StatusCode(500, "Failed to delete item from basket");
         }
+
 
         [Route("[action]")]
         [HttpPost]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(void), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Checkout([FromBody] BasketCheckout basketCheckout)
+        public async Task<IActionResult> Checkout([FromBody] BasketCheckout checkout)
         {
-            var basket = await _repository.GetBasket(basketCheckout.Username);
+            var basket = await _repository.GetCart(checkout.Username);
             if (basket == null)
             {
-                _logger.LogError("Basket could not be found for user: " + basketCheckout.Username);
+                _logger.LogError("Basket is not found for username: " + checkout.Username);
                 return BadRequest();
             }
-
-            var removed = await _repository.DeleteBasket(basketCheckout.Username);
+            var removed = await _repository.DeleteCart(checkout.Username);
             if (!removed)
             {
-                _logger.LogError("Basket could not be removed for user: " + basketCheckout.Username);
+                _logger.LogError("Basket can't be removed for username: " + checkout.Username);
                 return BadRequest();
             }
-
-            var eventMessage = _mapper.Map<BasketCheckoutEvent>(basketCheckout);
+            var eventMessage = _mapper.Map<BasketCheckoutEvent>(checkout);
             eventMessage.RequestId = Guid.NewGuid();
-
             try
             {
                 _eventBus.PublishBasketCheckout(EventBusConstants.BasketCheckoutQueue, eventMessage);
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
-                _logger.LogError("Error: Message cannot be published for user: " + basketCheckout.Username + ", " + e.Message);
+                _logger.LogError("Message can't be published for user " + checkout.Username + ": " + e.Message);
                 throw;
             }
-
             return Accepted();
         }
     }

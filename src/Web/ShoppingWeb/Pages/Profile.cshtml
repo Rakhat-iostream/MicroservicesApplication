@@ -1,0 +1,114 @@
+﻿@page
+@model ShoppingWeb.Pages.ProfileModel
+@{
+}
+<div class="container emp-profile">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="profile-img">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS52y5aInsxSm31CvHOFHWujqUx_wWTS9iM6s7BAm21oEN_RiGoog" alt="" />
+                <div class="file btn btn-lg btn-primary">
+                    Change Photo
+                    <input type="file" name="file" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="profile-head">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="updateEmail-tab" data-toggle="tab" href="#updateEmail" role="tab" aria-controls="updateEmail" aria-selected="false">Update email</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="updateUsername-tab" data-toggle="tab" href="#updateUsername" role="tab" aria-controls="updateUsername" aria-selected="false">Update username</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="updatePassword-tab" data-toggle="tab" href="#updatePassword" role="tab" aria-controls="updatePassword" aria-selected="false">Update Password</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md">
+            <div class="tab-content profile-tab" id="myTabContent">
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Username</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p>@Model.User.Username</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>First Name</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p>@Model.User.Firstname</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Last Name</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p>@Model.User.Lastname</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Email</label>
+                        </div>
+                        <div class="col-md-6">
+                            <p>@Model.User.Email</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="updateEmail" role="tabpanel" aria-labelledby="updateEmail-tab">
+                    <form method="post" asp-page-handler="UpdateUser" class="d-flex updateUserForm">
+                        <div class="form-row">
+                            <input type="hidden" name="id" value="@Model.User.Id" />
+                        </div>
+                        <div class="form-row updateUserField">
+                            <input type="email" name="email" value="@Model.User.Email" />
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-success">Update</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="updateUsername" role="tabpanel" aria-labelledby="updateUsername-tab">
+                    <form method="post" asp-page-handler="UpdateUser" class="d-flex updateUserForm">
+                        <div class="form-row">
+                            <input type="hidden" name="id" value="@Model.User.Id" />
+                        </div>
+                        <div class="form-row updateUserField">
+                            <input type="text" name="username" value="@Model.User.Username" />
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-success">Update</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="updatePassword" role="tabpanel" aria-labelledby="updatePassword-tab">
+                    <form method="post" asp-page-handler="UpdateUser" class="d-flex updateUserForm">
+                        <div class="form-row">
+                            <input type="hidden" name="id" value="@Model.User.Id" />
+                        </div>
+                        <div class="form-row updateUserField">
+                            <input type="password" name="password" value="@Model.User.Password" />
+                        </div>
+                        <div class="form-row">
+                            <button type="submit" class="btn btn-success">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

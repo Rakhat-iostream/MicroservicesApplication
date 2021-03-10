@@ -32,16 +32,14 @@ namespace ShoppingWeb.ApiContainer
             return await SendRequest<IEnumerable<Catalog>>(message);
         }
 
-        public async Task<Catalog> GetCatalog(string id)
+        public async Task<IEnumerable<Catalog>> GetFilteredProducts(string productName)
         {
-            var message = new HttpRequestBuilder(_settings.BaseAddress)
-                               .SetPath(_settings.CatalogPath)
-                               .AddToPath(id)
-                               .HttpMethod(HttpMethod.Get)
-                               .GetHttpMessage();
-
-            return await SendRequest<Catalog>(message);
+            using var message = new HttpRequestBuilder(_settings.BaseAddress).AddQueryString("productName", productName)
+              .HttpMethod(HttpMethod.Get)
+              .GetHttpMessage();
+            return await GetResponseAsync<IEnumerable<Catalog>>(message);
         }
+      
 
         public async Task<IEnumerable<Catalog>> GetCatalogByCategory(string category)
         {
@@ -67,5 +65,35 @@ namespace ShoppingWeb.ApiContainer
 
             return await SendRequest<Catalog>(message);
         }
+
+        public async Task<Catalog> GetProduct(string id)
+        {
+            using var message = new HttpRequestBuilder(_settings.BaseAddress + _settings.CatalogPath).AddToPath(id)
+           .HttpMethod(HttpMethod.Get)
+           .GetHttpMessage();
+            return await GetResponseAsync<Catalog>(message);
+        }
+
+        public async Task<IEnumerable<Catalog>> GetProductByCategory(string categoryName)
+        {
+            using var message = new HttpRequestBuilder(_settings.BaseAddress + _settings.CatalogPath).AddToPath("GetProductsByCategory/" + categoryName)
+              .HttpMethod(HttpMethod.Get)
+              .GetHttpMessage();
+            return await GetResponseAsync<IEnumerable<Catalog>>(message);
+        }
+
+       
+
+        public async Task<IEnumerable<Catalog>> GetProductByPage(int page)
+        {
+
+            var _builder = new HttpRequestBuilder(_settings.BaseAddress).AddToPath(_settings.CatalogPath);
+            
+                var message = _builder.AddQueryString("page", page.ToString())
+                .HttpMethod(HttpMethod.Get)
+                .GetHttpMessage();
+            return await GetResponseAsync<IEnumerable<Catalog>>(message);
+        }
     }
 }
+

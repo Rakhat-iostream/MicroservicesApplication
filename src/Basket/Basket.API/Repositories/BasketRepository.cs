@@ -18,35 +18,90 @@ namespace Basket.API.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<BasketCart> GetBasket(string userName)
+        private async Task<bool> CreateOrUpdateCart(BasketCart cart)
         {
-            var basket = await _context
-                                .Redis
-                                .StringGetAsync(userName);
-            if (basket.IsNullOrEmpty)
+            return await _context.Redis.StringSetAsync(cart.Username, JsonConvert.SerializeObject(cart));
+        }
+
+        public async Task<bool> DeleteItem(string username, BasketCartItem item)
+        {
+            var redisCart = await _context.Redis.StringGetAsync(username);
+            if (redisCart.IsNullOrEmpty) return false;
+            try
+            {
+                var cart = JsonConvert.DeserializeObject<BasketCart>(redisCart);
+                cart.Items.RemoveAll(i => i.ProductId.Equals(item.ProductId));
+                return await CreateOrUpdateCart(cart);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<BasketCart> GetCart(string username)
+        {
+            var redisCart = await _context.Redis.StringGetAsync(username);
+            if (redisCart.IsNullOrEmpty) return null;
+            try
+            {
+                return JsonConvert.DeserializeObject<BasketCart>(redisCart);
+            }
+            catch
             {
                 return null;
             }
-            return JsonConvert.DeserializeObject<BasketCart>(basket);
         }
 
-        public async Task<BasketCart> UpdateBasket(BasketCart basket)
+        public async Task<BasketCart> AddItem(string username, BasketCartItem item)
         {
-            var updated = await _context
-                              .Redis
-                              .StringSetAsync(basket.Username, JsonConvert.SerializeObject(basket));
-            if (!updated)
+            var redisCart = await _context.Redis.StringGetAsync(username);
+            if (redisCart.IsNullOrEmpty)
+            {
+                await CreateOrUpdateCart(new BasketCart { Username = username });
+                redisCart = await _context.Redis.StringGetAsync(username);
+            }
+            try
+            {
+                var cart = JsonConvert.DeserializeObject<BasketCart>(redisCart);
+                cart.Items.Add(item);
+                if (await CreateOrUpdateCart(cart))
+                {
+                    return cart;
+                }
+                return null;
+            }
+            catch
             {
                 return null;
             }
-            return await GetBasket(basket.Username);
         }
 
-        public async Task<bool> DeleteBasket(string userName)
+        public async Task<BasketCart> UpdateItem(string username, BasketCartItem item)
         {
-            return await _context
-                            .Redis
-                            .KeyDeleteAsync(userName);
+            var redisCart = await _context.Redis.StringGetAsync(username);
+            if (redisCart.IsNullOrEmpty) return null;
+            try
+            {
+                var cart = JsonConvert.DeserializeObject<BasketCart>(redisCart);
+                int index = cart.Items.FindIndex(i => i.ProductId.Equals(item.ProductId));
+                if (index == -1) return null;
+                cart.Items[index] = item;
+                if (await CreateOrUpdateCart(cart))
+                {
+                    return cart;
+                }
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> DeleteCart(string username)
+        {
+            return await _context.Redis.KeyDeleteAsync(username);
         }
     }
 }

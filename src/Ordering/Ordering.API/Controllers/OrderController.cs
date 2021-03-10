@@ -29,15 +29,7 @@ namespace Ordering.API.Controllers
         {
             var orderList = await _orderRepository.GetOrdersByUsername(username);
             //var orderResponseList = _mapper.Map<IEnumerable<OrderResponse>>(orderList);
-            List<Order> orders = new List<Order>
-            {
-                new Order
-                {
-                    FirstName = "salem",
-                    Username = "alem"
-                }
-            };
-            return Ok(orders);
+            return Ok(orderList);
         }
     }
 }

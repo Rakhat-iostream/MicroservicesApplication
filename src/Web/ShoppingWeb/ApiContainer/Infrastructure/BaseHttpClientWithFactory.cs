@@ -16,9 +16,49 @@ namespace ShoppingWeb.ApiContainer.Infrastructure
 
         public BaseHttpClientWithFactory(IHttpClientFactory factory) => _factory = factory;
 
-        private HttpClient GetHttpClient()
+        public HttpClient GetHttpClient()
         {
             return _factory.CreateClient();
+        }
+
+        public virtual async Task<T> GetResponseAsync<T>(HttpRequestMessage request) where T : class
+        {
+            using var client = GetHttpClient();
+            using var response = await client.SendAsync(request);
+            T result = null;
+            try
+            {
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsAsync<T>(GetFormatters());
+                }
+            }
+            catch
+            {
+                result = null;
+            }
+            return result;
+        }
+
+
+        public virtual async Task<string> GetResponseStringAsync(HttpRequestMessage request)
+        {
+            using var client = GetHttpClient();
+            using var response = await client.SendAsync(request);
+            try
+            {
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+            return null;
         }
 
         public virtual async Task<T> SendRequest<T>(HttpRequestMessage request) where T : class

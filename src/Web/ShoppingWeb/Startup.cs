@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,6 +35,17 @@ namespace ShoppingWeb
             services.AddTransient<IOrderApi, OrderApi>();
             services.AddTransient<IBasketApi, BasketApi>();
             services.AddTransient<ICatalogApi, CatalogApi>();
+            services.AddTransient<IUserApi, UserApi>();
+
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = "Shopping.Session";
+                options.IdleTimeout = TimeSpan.FromMinutes(60);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+            services.AddDistributedMemoryCache();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddRazorPages();
         }
@@ -56,6 +68,8 @@ namespace ShoppingWeb
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoppingWeb.ApiContainer.Interfaces;
@@ -33,7 +34,7 @@ namespace ShoppingWeb
                 return NotFound();
             }
 
-            Product = await _catalogApi.GetCatalog(productId);
+            Product = await _catalogApi.GetProduct(productId);
             if (Product == null)
             {
                 return NotFound();
@@ -46,20 +47,18 @@ namespace ShoppingWeb
             //if (!User.Identity.IsAuthenticated)
             //    return RedirectToPage("./Account/Login", new { area = "Identity" });
 
-            var product = await _catalogApi.GetCatalog(productId);
-
-            var basket = await _basketApi.GetBasket("test");
-
-            basket.Items.Add(new BasketItem
+            string userId = HttpContext.Session.GetString("userId");
+            if (string.IsNullOrEmpty(userId)) return RedirectToPage("Login", new { loginError = "Please sign in" });
+            Product = await _catalogApi.GetProduct(productId);
+            var item = new BasketItem
             {
                 ProductId = productId,
-                ProductName = product.Name,
-                Price = product.Price,
                 Quantity = Quantity,
-                Color = Color
-            });
-
-            _ = await _basketApi.UpdateBasket(basket);
+                Color = Color,
+                ProductName = Product.Name,
+                Price = Product.Price
+            };
+            await _basketApi.AddItem(userId, item);
             return RedirectToPage("Cart");
         }
     }

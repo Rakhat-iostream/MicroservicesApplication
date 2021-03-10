@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoppingWeb.ApiContainer.Interfaces;
@@ -12,6 +13,7 @@ namespace ShoppingWeb.Pages
     {
         private readonly ICatalogApi _catalogApi;
         private readonly IBasketApi _basketApi;
+        private string userId;
 
         public IndexModel(ICatalogApi catalogApi, IBasketApi basketApi)
         {
@@ -32,20 +34,17 @@ namespace ShoppingWeb.Pages
             //if (!User.Identity.IsAuthenticated)
             //    return RedirectToPage("./Account/Login", new { area = "Identity" });
 
-            var product = await _catalogApi.GetCatalog(productId);
-
-            var basket = await _basketApi.GetBasket("test");
-
-            basket.Items.Add(new BasketItem
+            userId = HttpContext.Session.GetString("userId");
+            if (string.IsNullOrEmpty(userId)) return RedirectToPage("Login", new { loginError = "Please sign in" });
+            var item = await _catalogApi.GetProduct(productId);
+            await _basketApi.AddItem(userId, new BasketItem
             {
                 ProductId = productId,
-                ProductName = product.Name,
-                Price = product.Price,
+                Color = "Black",
+                Price = item.Price,
                 Quantity = 1,
-                Color = "Black"
+                ProductName = item.Name
             });
-
-            _ = await _basketApi.UpdateBasket(basket);
             return RedirectToPage("Cart");
         }
     }

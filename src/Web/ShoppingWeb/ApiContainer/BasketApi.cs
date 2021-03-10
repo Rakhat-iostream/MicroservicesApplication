@@ -22,31 +22,52 @@ namespace ShoppingWeb.ApiContainer
             _settings = settings;
         }
 
-        public async Task<Basket> GetBasket(string userName)
+        public async Task<Basket> GetBasket(string username)
         {
-            var message = new HttpRequestBuilder(_settings.BaseAddress)
-                               .SetPath(_settings.BasketPath)
-                               .AddQueryString("username", userName)
-                               .HttpMethod(HttpMethod.Get)
-                               .GetHttpMessage();
-
-            return await SendRequest<Basket>(message);
+            using var message = new HttpRequestBuilder(_settings.BaseAddress + _settings.BasketPath).AddQueryString("username", username)
+            .HttpMethod(HttpMethod.Get)
+            .GetHttpMessage();
+            return await GetResponseAsync<Basket>(message);
         }
 
-        public async Task<Basket> UpdateBasket(Basket model)
+        public async Task<Basket> AddItem(string username, BasketItem item)
         {
-            var message = new HttpRequestBuilder(_settings.BaseAddress)
-                                .SetPath(_settings.BasketPath)
-                                .HttpMethod(HttpMethod.Post)
-                                .GetHttpMessage();
-
-            var json = JsonConvert.SerializeObject(model);
-            message.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            return await SendRequest<Basket>(message);
+            using var message = new HttpRequestBuilder(_settings.BaseAddress + _settings.BasketPath)
+            .HttpMethod(HttpMethod.Post).AddQueryString("username", username).
+            Content(new StringContent(JsonConvert.SerializeObject(item), Encoding.UTF8, "application/json"))
+            .GetHttpMessage();
+            return await GetResponseAsync<Basket>(message);
         }
 
-        public async Task CheckoutBasket(BasketCheckout model)
+        public async Task<bool> DeleteCart(string username)
+        {
+
+            var _builder = new HttpRequestBuilder(_settings.BaseAddress).AddToPath(_settings.BasketPath);
+
+            using var message = _builder.AddToPath(username)
+            .HttpMethod(HttpMethod.Delete)
+            .GetHttpMessage();
+            var response = await GetResponseStringAsync(message);
+            return response != null;
+        }
+
+
+        public async Task<bool> DeleteItem(string username, BasketItem item)
+        {
+
+            var _builder = new HttpRequestBuilder(_settings.BaseAddress).AddToPath(_settings.BasketPath);
+
+            using var message = _builder.
+                AddQueryString("username", username).
+            Content(new StringContent(JsonConvert.SerializeObject(item), Encoding.UTF8, "application/json"))
+            .HttpMethod(HttpMethod.Delete)
+            .GetHttpMessage();
+            var response = await GetResponseStringAsync(message);
+            return response != null;
+        }
+
+
+        public async Task CheckoutBasket(OrderResponse model)
         {
             var message = new HttpRequestBuilder(_settings.BaseAddress)
                                 .SetPath(_settings.BasketPath)
@@ -57,7 +78,9 @@ namespace ShoppingWeb.ApiContainer
             var json = JsonConvert.SerializeObject(model);
             message.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            await SendRequest<BasketCheckout>(message);
+            await SendRequest<OrderResponse>(message);
         }
     }
 }
+
+

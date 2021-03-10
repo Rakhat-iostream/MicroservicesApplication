@@ -35,3 +35,10 @@ services:
             context: .
             dockerfile: src/Web/ShoppingWeb/Dockerfile
 
+
+    identityservice:
+        image: ${DOCKER_REGISTRY-}identityservice
+        build:
+            context: .
+            dockerfile: src/Identity/IdentityService/IdentityService/Dockerfile
+
